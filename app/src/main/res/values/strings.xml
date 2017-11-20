@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Specker</string>
+    <string name="app_moto">make your dream</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <!--string name="facebook_app_id">1691916411112429</string>
+    <string name="fb_login_protocol_scheme">fb1691916411112429</string-->
+    <string name="facebook_app_id">123776005001183</string>
+    <string name="fb_login_protocol_scheme">fb123776005001183</string>
+</resources>

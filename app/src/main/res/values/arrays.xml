@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="chatListIndicator">
+        <item>내 프로필</item>
+        <item>즐겨찾기</item>
+        <item>친구 추천</item>
+        <item>그룹 추천</item>
+        <item>그룹</item>
+        <item>친구</item>
+        <item>asd</item>
+
+    </string-array>
+    <string-array name="chatListUniqueValue">
+        <item>앤</item>
+        <item>밴</item>
+        <item>쌘</item>
+        <item>댄</item>
+        <item>팬</item>
+        <item>잰</item>
+
+    </string-array>
+    <string-array name="countries">
+        <item>전상현</item>
+        <item>이유리</item>
+        <item>이천지</item>
+        <item>이민석</item>
+        <item>박소라</item>
+        <item>김슬기</item>
+        <item>이유진</item>
+    </string-array>
+</resources>
