@@ -2,6 +2,7 @@ package com.example.sanghyunj.speckerapp.retrofit;
 
 import com.example.sanghyunj.speckerapp.retrofit.Body.AddFriendBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.CreateChatroomBody;
+import com.example.sanghyunj.speckerapp.retrofit.Body.GetFriendListBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.SearchUserBody;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetFriendsListResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.ResponseWithObjectId;
@@ -34,7 +35,8 @@ public interface Api {
 
     @POST("getFriendsList")
     Call<GetFriendsListResponse> getFriendsList(
-        @Header("Authorization") String authorization
+        @Header("Authorization") String authorization,
+        @Body GetFriendListBody body
     );
 
     @POST("createChat")

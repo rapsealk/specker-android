@@ -27,6 +27,7 @@ import android.util.Log;
 import com.example.sanghyunj.speckerapp.MainActivity;
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.util.SharedPreferenceManager;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -44,8 +45,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String room = data.get("room");
         String sender = data.get("sender");
         String message = data.get("message");
+        long timestamp = Long.parseLong(data.get("timestamp"));
 
-        if (!SharedPreferenceManager.getInstance(getApplicationContext()).getRoomStatus(room)) {
+        if (!FirebaseAuth.getInstance().getCurrentUser().getUid().equals(sender) &&
+                !SharedPreferenceManager.getInstance(getApplicationContext()).getRoomStatus(room)) {
             Intent intent = new Intent()
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0x1002, intent, PendingIntent.FLAG_ONE_SHOT);
@@ -65,6 +68,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         bIntent.setAction("com.example.sanghyunj.speckerapp.RECEIVE_CHAT");
         bIntent.putExtra("room", room);
         bIntent.putExtra("message", message);
+        bIntent.putExtra("timestamp", timestamp);
         Log.d("MessagingService", "sendBroadcast with action RECEIVE_CHAT");
         sendBroadcast(bIntent);
 

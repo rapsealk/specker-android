@@ -14,6 +14,7 @@ public final class FriendContract {
         public static final String TABLE_NAME = "friend";
         public static final String COLUMN_NAME_USER_ID = "user_id";
         public static final String COLUMN_NAME_FRIEND_ID = "friend_id";
+        public static final String COLUMN_FRIEND_NAME = "friend_name";
         public static final String COLUMN_NAME_PROFILE_IMAGE = "profile_image";
         public static final String COLUMN_NAME_STATUS_MESSAGE = "status_message";
         public static final String COLUMN_NAME_TIMESTAMP = "timestamp";
@@ -23,6 +24,7 @@ public final class FriendContract {
             " (" + FriendEntry._ID + " INTEGER PRIMARY KEY, " +
             FriendEntry.COLUMN_NAME_USER_ID + " TEXT, " +
             FriendEntry.COLUMN_NAME_FRIEND_ID + " TEXT, " +
+            FriendEntry.COLUMN_FRIEND_NAME + " TEXT, " +
             FriendEntry.COLUMN_NAME_PROFILE_IMAGE + " TEXT, " +
             FriendEntry.COLUMN_NAME_STATUS_MESSAGE + " TEXT, " +
             FriendEntry.COLUMN_NAME_TIMESTAMP + " INTEGER" + " )";

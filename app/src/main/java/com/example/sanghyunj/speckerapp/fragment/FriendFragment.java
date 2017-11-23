@@ -18,9 +18,11 @@ import com.example.sanghyunj.speckerapp.activity.UserInfoActivity;
 import com.example.sanghyunj.speckerapp.adapter.FriendListAdapter;
 import com.example.sanghyunj.speckerapp.controller.Firebase;
 import com.example.sanghyunj.speckerapp.controller.FriendListObserver;
+import com.example.sanghyunj.speckerapp.database.FriendDbHelper;
 import com.example.sanghyunj.speckerapp.listener.OnFriendListItemClickListener;
 import com.example.sanghyunj.speckerapp.model.FriendList.FriendListItem;
 import com.example.sanghyunj.speckerapp.retrofit.Api;
+import com.example.sanghyunj.speckerapp.retrofit.Body.GetFriendListBody;
 import com.example.sanghyunj.speckerapp.retrofit.Response.Friend;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetFriendsListResponse;
 import com.example.sanghyunj.speckerapp.util.OrderingByKoreanEnglishNumberSpecial;
@@ -48,10 +50,15 @@ import se.emilsjolander.stickylistheaders.StickyListHeadersListView;
 public class FriendFragment extends Fragment implements FriendListObserver{
 
     private ExpandableStickyListHeadersListView mListView;
-    FriendListAdapter friendListAdapter;
+    public static FriendListAdapter friendListAdapter;
     WeakHashMap<View,Integer> mOriginalViewHeightPool = new WeakHashMap<View, Integer>();
 
     private List<FriendListItem> friendListItemList;
+
+    private FirebaseAuth mFirebaseAuth;
+
+    public FriendDbHelper mDbHelper;
+    private long mLastFriendAddedAt = -1;
 
     public FriendFragment() { }
 
@@ -60,12 +67,15 @@ public class FriendFragment extends Fragment implements FriendListObserver{
 
         View rootView = inflater.inflate(R.layout.fragment_friend, container, false);
 
-        friendListItemList = new ArrayList<>();
+        mFirebaseAuth = FirebaseAuth.getInstance();
 
         mListView = (CoordinateStickyListView) rootView.findViewById(R.id.friend_list);
         mListView.setAnimExecutor(new AnimationExecutor());
 
         friendListAdapter = new FriendListAdapter(getContext());
+
+        friendListItemList = new ArrayList<>();
+
         friendListAdapter.setChatItems(friendListItemList);
 
         friendListAdapter.setOnFriendListItemClickListener(new OnFriendListItemClickListener() {
@@ -82,6 +92,8 @@ public class FriendFragment extends Fragment implements FriendListObserver{
         });
 
         mListView.setAdapter(friendListAdapter);
+        // friendListAdapter.notifyDataSetChanged();
+
         mListView.setVerticalScrollBarEnabled(false);
         mListView.setOnHeaderClickListener(new StickyListHeadersListView.OnHeaderClickListener() {
             @Override
@@ -97,6 +109,18 @@ public class FriendFragment extends Fragment implements FriendListObserver{
         Firebase.getInstance().addFriendListObserver(this);
         Firebase.getInstance().notifyFriendListObserver();
 
+        mDbHelper = new FriendDbHelper(getContext());
+
+        ArrayList<Friend> mFriends = mDbHelper.getFriends();
+        for (Friend friend: mFriends) {
+            Log.d("Friend", friend.getId() + " " + friend.getTimestamp());
+            friendListAdapter.addChatItem(new FriendListItem(friend));
+            // friendListItemList.add(new FriendListItem(friend));
+            mLastFriendAddedAt = friend.getTimestamp();
+        }
+        // update(friendListItemList);
+        friendListAdapter.notifyDataSetChanged();
+
         Api api = Api.retrofit.create(Api.class);
         FirebaseAuth.getInstance().getCurrentUser().getToken(true)
                 .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
@@ -104,7 +128,7 @@ public class FriendFragment extends Fragment implements FriendListObserver{
                     public void onComplete(@NonNull Task<GetTokenResult> task) {
                         if (task.isSuccessful()) {
                             String token = task.getResult().getToken();
-                            Call<GetFriendsListResponse> call = api.getFriendsList(token);
+                            Call<GetFriendsListResponse> call = api.getFriendsList(token, new GetFriendListBody(mLastFriendAddedAt));
                             new SearchUserTask().execute(call);
                         }
                     }
@@ -198,7 +222,9 @@ public class FriendFragment extends Fragment implements FriendListObserver{
                         for (Friend user: response.body().friends) {
                             // friendListItemList.add(new FriendListItem(user));
                             friendListAdapter.addChatItem(new FriendListItem(user));
+                            long newRowId = mDbHelper.insertFriend(mFirebaseAuth.getCurrentUser().getUid(), user);
                             Log.d("FriendListItem", user.toString());
+                            Log.d("Friend Inserted", "Row: " + newRowId);
                         }
                         return response.code() + " " + response.body().toString();
                     }

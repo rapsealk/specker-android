@@ -15,10 +15,15 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.controller.Firebase;
+import com.example.sanghyunj.speckerapp.database.FriendDbHelper;
+import com.example.sanghyunj.speckerapp.fragment.FriendFragment;
+import com.example.sanghyunj.speckerapp.model.FriendList.FriendListItem;
 import com.example.sanghyunj.speckerapp.model.SearchedList.SearchedListItem;
 import com.example.sanghyunj.speckerapp.retrofit.Api;
 import com.example.sanghyunj.speckerapp.retrofit.Body.AddFriendBody;
 import com.example.sanghyunj.speckerapp.retrofit.DefaultResponse;
+import com.example.sanghyunj.speckerapp.retrofit.Response.Friend;
+import com.example.sanghyunj.speckerapp.retrofit.Response.SearchedUser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -41,8 +46,13 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
     private List<SearchedListItem> searchedListItemList;
     private Context context;
 
+    private FirebaseAuth mFirebaseAuth;
+    private FriendDbHelper mDbHelper;
+
     public SearchFriendListAdapter(Context context) {
         this.context = context;
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mDbHelper = new FriendDbHelper(context);
     }
 
     public void setFriendItemList(List<SearchedListItem> searchedListItemList) {
@@ -51,7 +61,7 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
 
     @Override
     public SearchFriendViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_friend,parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_friend, parent, false);
         SearchFriendViewHolder viewHolder = new SearchFriendViewHolder(view);
         return viewHolder;
     }
@@ -88,8 +98,9 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
                                     if (task.isSuccessful()) {
                                         String token = task.getResult().getToken();
                                         Api api = Api.retrofit.create(Api.class);
-                                        Call<DefaultResponse> call = api.addFriend(token, new AddFriendBody(user.getUid()));
-                                        new AddFriendTask(position).execute(call);
+                                        long timestamp = System.currentTimeMillis();
+                                        Call<DefaultResponse> call = api.addFriend(token, new AddFriendBody(user.getId(), timestamp));
+                                        new AddFriendTask(position, timestamp).execute(call);
                                     }
                                 }
                             })
@@ -133,9 +144,11 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
     private class AddFriendTask extends AsyncTask<Call, Void, String> {
 
         private int position;
+        private long timestamp;
 
-        public AddFriendTask(int position) {
+        public AddFriendTask(int position, long timestamp) {
             this.position = position;
+            this.timestamp = timestamp;
         }
 
         @Override
@@ -161,6 +174,12 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
         @Override
         protected void onPostExecute(String result) {
             Log.d("AsyncTask", result);
+            SearchedListItem item = searchedListItemList.get(position);
+            SearchedUser addedFriend = (SearchedUser) item.getElement();
+            FriendFragment.friendListAdapter.addChatItem(new FriendListItem(addedFriend));
+            FriendFragment.friendListAdapter.notifyDataSetChanged();
+            long newRowid = mDbHelper.insertFriend(mFirebaseAuth.getCurrentUser().getUid(), new Friend(addedFriend.getId(), addedFriend.getName(), addedFriend.getProfile(), timestamp));
+            Log.d("Friend Added", "Row Id: " + newRowid);
             searchedListItemList.remove(position);
             notifyDataSetChanged();
         }

@@ -26,8 +26,10 @@ import android.widget.TextView;
 
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.database.ChatDbHelper;
+import com.example.sanghyunj.speckerapp.fragment.ChatFragment;
 import com.example.sanghyunj.speckerapp.model.ChatMessage;
 
+import com.example.sanghyunj.speckerapp.retrofit.Body.ChatroomMetaBody;
 import com.example.sanghyunj.speckerapp.retrofit.ChatLog;
 import com.example.sanghyunj.speckerapp.retrofit.ChatRequest;
 import com.example.sanghyunj.speckerapp.retrofit.GetChatBody;
@@ -165,6 +167,7 @@ public class ChatActivity extends Activity {
     private Socket mSocket;
     private String mSender;
     private String mRoomId;
+    private int mChatroomCount;
 
     private ChatDbHelper mDbHelper;
 
@@ -185,6 +188,14 @@ public class ChatActivity extends Activity {
         mSender = firebaseUser.getUid();
         mRoomId = getIntent().getStringExtra("_id");
         Log.d("ChatActivity", "roomId: " + mRoomId);
+
+        for (mChatroomCount = 0; mChatroomCount < ChatFragment.mChatRooms.size(); mChatroomCount++) {
+            if (ChatFragment.mChatRooms.get(mChatroomCount)._id.equals(mRoomId)) break;
+        }
+        if (mChatroomCount == ChatFragment.mChatRooms.size()) {
+            ChatFragment.mChatRooms.add(new ChatroomMetaBody(mRoomId, 2, "", System.currentTimeMillis()));
+            ChatFragment.adapter.notifyDataSetChanged();
+        }
 
         SharedPreferenceManager.getInstance(getApplicationContext()).setRoomStatus(mRoomId, true);
 
@@ -310,6 +321,10 @@ public class ChatActivity extends Activity {
                     mRecyclerViewAdapter.notifyDataSetChanged();
                     long newRowId = mDbHelper.insertChat(mRoomId, mSender, message, timestamp);
                     Log.d("INSERT_CHAT_BUTTON", "New Row Id: " + newRowId + ", message: " + message + ", timestamp: " + Long.toString(timestamp));
+                    // ChatFragment.mChatRooms.get(mChatroomCount)._id = mSender;
+                    // ChatFragment.mChatRooms.get(mChatroomCount).lastChat = message;
+                    // ChatFragment.mChatRooms.get(mChatroomCount).lastTimestamp = timestamp;
+                    // ChatFragment.adapter.notifyDataSetChanged();
                 }
                 catch (JSONException ex) {
                     ex.printStackTrace();
@@ -667,7 +682,6 @@ public class ChatActivity extends Activity {
                     array.add(new ChatMessage(log.content, log.author, "", ""));
                 }
             }
-            // mDbHelper
             mRecyclerViewAdapter.notifyDataSetChanged();
             mProgressBar.setVisibility(ProgressBar.INVISIBLE);
         }

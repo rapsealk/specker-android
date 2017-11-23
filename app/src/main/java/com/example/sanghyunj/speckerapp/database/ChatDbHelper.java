@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.sanghyunj.speckerapp.model.ChatMessage;
+import static com.example.sanghyunj.speckerapp.database.ChatContract.*;
+import static com.example.sanghyunj.speckerapp.database.ChatContract.ChatEntry.*;
 
 import java.util.ArrayList;
 
@@ -26,12 +28,12 @@ public class ChatDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(ChatContract.SQL_CREATE_ENTRIES);
+        db.execSQL(SQL_CREATE_ENTRIES);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(ChatContract.SQL_DELETE_ENTRIES);
+        db.execSQL(SQL_DELETE_ENTRIES);
         onCreate(db);
     }
 
@@ -43,32 +45,32 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     public long insertChat(String room, String author, String message, long timestamp) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(ChatContract.ChatEntry.COLUMN_NAME_ROOM, room);
-        values.put(ChatContract.ChatEntry.COLUMN_NAME_AUTHOR, author);
-        values.put(ChatContract.ChatEntry.COLUMN_NAME_MESSAGE, message);
-        values.put(ChatContract.ChatEntry.COLUMN_NAME_TIMESTAMP, timestamp);
-        long newRowId = db.insert(ChatContract.ChatEntry.TABLE_NAME, null, values);
+        values.put(COLUMN_NAME_ROOM, room);
+        values.put(COLUMN_NAME_AUTHOR, author);
+        values.put(COLUMN_NAME_MESSAGE, message);
+        values.put(COLUMN_NAME_TIMESTAMP, timestamp);
+        long newRowId = db.insert(TABLE_NAME, null, values);
         return newRowId;
     }
 
     public long getLastChatTimestamp(String roomId) {
         SQLiteDatabase db = getReadableDatabase();
         String[] projection = {
-                ChatContract.ChatEntry._ID,
-                ChatContract.ChatEntry.COLUMN_NAME_ROOM,
-                ChatContract.ChatEntry.COLUMN_NAME_AUTHOR,
-                ChatContract.ChatEntry.COLUMN_NAME_MESSAGE,
-                ChatContract.ChatEntry.COLUMN_NAME_TIMESTAMP
+                _ID,
+                COLUMN_NAME_ROOM,
+                COLUMN_NAME_AUTHOR,
+                COLUMN_NAME_MESSAGE,
+                COLUMN_NAME_TIMESTAMP
         };
-        String selection = ChatContract.ChatEntry.COLUMN_NAME_ROOM + " = ?";
+        String selection = COLUMN_NAME_ROOM + " = ?";
         String[] selectionArgs = { roomId };
-        String sortOrder = ChatContract.ChatEntry.COLUMN_NAME_TIMESTAMP + " DESC";
+        String sortOrder = COLUMN_NAME_TIMESTAMP + " DESC";
 
-        Cursor cursor = db.query(ChatContract.ChatEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+        Cursor cursor = db.query(TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.moveToFirst();
         if (cursor.getCount() == 0) return -1;
         try {
-            return cursor.getLong(cursor.getColumnIndexOrThrow("timestamp"));
+            return cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_NAME_TIMESTAMP));
         } catch (IllegalArgumentException exception) {
             return -1;
         }
@@ -77,22 +79,22 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     public ArrayList<ChatMessage> getChatHistory(String roomId) {
         SQLiteDatabase db = getReadableDatabase();
         String[] projection = {
-                ChatContract.ChatEntry.COLUMN_NAME_AUTHOR,
-                ChatContract.ChatEntry.COLUMN_NAME_MESSAGE,
-                ChatContract.ChatEntry.COLUMN_NAME_TIMESTAMP
+                COLUMN_NAME_AUTHOR,
+                COLUMN_NAME_MESSAGE,
+                COLUMN_NAME_TIMESTAMP
         };
-        String selection = ChatContract.ChatEntry.COLUMN_NAME_ROOM + " = ?";
+        String selection = COLUMN_NAME_ROOM + " = ?";
         String[] selectionArgs = { roomId };
-        String sortOrder = ChatContract.ChatEntry.COLUMN_NAME_TIMESTAMP;
+        String sortOrder = COLUMN_NAME_TIMESTAMP;
 
-        Cursor cursor = db.query(ChatContract.ChatEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+        Cursor cursor = db.query(TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.moveToFirst();
 
         ArrayList<ChatMessage> mChatMessages = new ArrayList<>();
         for (int i = 0; i < cursor.getCount(); i++) {
-            String author = cursor.getString(cursor.getColumnIndex("author"));
-            String message = cursor.getString(cursor.getColumnIndex("message"));
-            long timestamp = cursor.getLong(cursor.getColumnIndex("timestamp"));
+            String author = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_AUTHOR));
+            String message = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_MESSAGE));
+            long timestamp = cursor.getLong(cursor.getColumnIndex(COLUMN_NAME_TIMESTAMP));
             mChatMessages.add(new ChatMessage(message, author, "", ""));
             cursor.moveToNext();
         }
@@ -102,14 +104,14 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     public boolean ensureTimestamp(String roomId, long timestamp) {
         SQLiteDatabase db = getReadableDatabase();
         String[] projection = {
-                ChatContract.ChatEntry.COLUMN_NAME_AUTHOR,
-                ChatContract.ChatEntry.COLUMN_NAME_MESSAGE,
-                ChatContract.ChatEntry.COLUMN_NAME_TIMESTAMP
+                COLUMN_NAME_AUTHOR,
+                COLUMN_NAME_MESSAGE,
+                COLUMN_NAME_TIMESTAMP
         };
-        String selection = ChatContract.ChatEntry.COLUMN_NAME_ROOM + " = ? AND " + ChatContract.ChatEntry.COLUMN_NAME_TIMESTAMP + " = ?";
+        String selection = COLUMN_NAME_ROOM + " = ? AND " + COLUMN_NAME_TIMESTAMP + " = ?";
         String[] selectionArgs = { roomId, Long.toString(timestamp) };
 
-        Cursor cursor = db.query(ChatContract.ChatEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
+        Cursor cursor = db.query(TABLE_NAME, projection, selection, selectionArgs, null, null, null);
         cursor.moveToFirst();
 
         return (cursor.getCount() == 0);

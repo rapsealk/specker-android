@@ -310,8 +310,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             Log.d("BroadcastReceiver", "onReceive with action RECEIVE_CHAT");
             Log.d("message", intent.getStringExtra("message"));
             // TODO FIX POSITION
-            ChatFragment.mChatRooms.get(0).lastChat = intent.getStringExtra("message");
-            ChatFragment.adapter.notifyDataSetChanged();
+            String room = intent.getStringExtra("room");
+            for (int i = 0; i < ChatFragment.mChatRooms.size(); i++) {
+                if (ChatFragment.mChatRooms.get(i)._id.equals(room)) {
+                    ChatFragment.mChatRooms.get(i).lastChat = intent.getStringExtra("message");
+                    ChatFragment.mChatRooms.get(i).lastTimestamp = intent.getLongExtra("timestamp", System.currentTimeMillis());
+                    ChatFragment.adapter.notifyDataSetChanged();
+                    break;
+                }
+            }
         }
     }
 }

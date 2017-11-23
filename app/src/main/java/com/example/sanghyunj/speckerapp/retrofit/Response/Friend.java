@@ -11,12 +11,16 @@ public class Friend implements Element {
     public String _id;
     public String name;
     public String gravatar;
+    public long timestamp;
 
-    public Friend(String _id, String name, String gravatar) {
+    public Friend(String _id, String name, String gravatar, long timestamp) {
         this._id = _id;
         this.name = name;
         this.gravatar = gravatar;
+        this.timestamp = timestamp;
     }
+
+    public long getTimestamp() { return this.timestamp; }
 
     @Override
     public String getName() { return name; }

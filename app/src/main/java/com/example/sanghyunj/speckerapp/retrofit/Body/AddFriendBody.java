@@ -7,9 +7,11 @@ package com.example.sanghyunj.speckerapp.retrofit.Body;
 public class AddFriendBody {
 
     public String friend;
+    public long timestamp;
 
-    public AddFriendBody(String friend) {
+    public AddFriendBody(String friend, long timestamp) {
         this.friend = friend;
+        this.timestamp = timestamp;
     }
 
     @Override
