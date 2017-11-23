@@ -24,6 +24,9 @@ public class FriendListItem {
         return type;
     }
 
+    public String getId() {
+        return element.getId();
+    }
 
     public String getName() {
         return element.getName();

@@ -76,6 +76,7 @@ public class FriendFragment extends Fragment implements FriendListObserver{
                 // Intent intent = new Intent(getActivity(), UserInfoActivity.class);
                 intent.putExtra("userName", friend.getName());
                 intent.putExtra("profileImage", friend.getProfileImage());
+                intent.putExtra("userId", friend.getId());
                 startActivity(intent);
             }
         });

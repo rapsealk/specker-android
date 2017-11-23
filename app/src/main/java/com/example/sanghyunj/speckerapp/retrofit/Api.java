@@ -1,8 +1,10 @@
 package com.example.sanghyunj.speckerapp.retrofit;
 
 import com.example.sanghyunj.speckerapp.retrofit.Body.AddFriendBody;
+import com.example.sanghyunj.speckerapp.retrofit.Body.CreateChatroomBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.SearchUserBody;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetFriendsListResponse;
+import com.example.sanghyunj.speckerapp.retrofit.Response.ResponseWithObjectId;
 import com.example.sanghyunj.speckerapp.retrofit.Response.SearchUserResponse;
 
 import retrofit2.Call;
@@ -33,6 +35,12 @@ public interface Api {
     @POST("getFriendsList")
     Call<GetFriendsListResponse> getFriendsList(
         @Header("Authorization") String authorization
+    );
+
+    @POST("createChat")
+    Call<ResponseWithObjectId> createChatroom(
+        @Header("Authorization") String authorization,
+        @Body CreateChatroomBody body
     );
 
     public static final Retrofit retrofit = new Retrofit.Builder()
