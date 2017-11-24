@@ -8,7 +8,7 @@ import com.example.sanghyunj.speckerapp.model.Element;
 
 public class SearchedUser implements Element {
 
-    public String _id;
+    public String uid;
     public String name;
     public String email;
     public String gravatar;
@@ -16,7 +16,7 @@ public class SearchedUser implements Element {
 
     @Override
     public String toString() {
-        return "{ _id: " + _id + ", name: " + name + ", email: " + email + ", gravatar: " + gravatar + " }";
+        return "{ uid: " + uid + ", name: " + name + ", email: " + email + ", gravatar: " + gravatar + " }";
     }
 
     @Override
@@ -32,8 +32,8 @@ public class SearchedUser implements Element {
     public String getProfile() { return gravatar; }
 
     @Override
-    public String getId() { return _id; }
+    public String getId() { return ""; }
 
     @Override
-    public String getUid() { return ""; }
+    public String getUid() { return uid; }
 }

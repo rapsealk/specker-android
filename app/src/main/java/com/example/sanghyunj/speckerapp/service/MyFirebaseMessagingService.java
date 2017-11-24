@@ -26,6 +26,7 @@ import android.util.Log;
 
 import com.example.sanghyunj.speckerapp.MainActivity;
 import com.example.sanghyunj.speckerapp.R;
+import com.example.sanghyunj.speckerapp.activity.ChatActivity;
 import com.example.sanghyunj.speckerapp.util.SharedPreferenceManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -49,8 +50,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         if (!FirebaseAuth.getInstance().getCurrentUser().getUid().equals(sender) &&
                 !SharedPreferenceManager.getInstance(getApplicationContext()).getRoomStatus(room)) {
-            Intent intent = new Intent()
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            Intent intent = new Intent(this, ChatActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    .putExtra("_id", room);
             PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0x1002, intent, PendingIntent.FLAG_ONE_SHOT);
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext())
                     .setSmallIcon(R.mipmap.ic_launcher)

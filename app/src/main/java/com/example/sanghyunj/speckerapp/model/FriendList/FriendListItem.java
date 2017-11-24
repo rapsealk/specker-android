@@ -28,6 +28,10 @@ public class FriendListItem {
         return element.getId();
     }
 
+    public String getUid() {
+        return element.getUid();
+    }
+
     public String getName() {
         return element.getName();
     }

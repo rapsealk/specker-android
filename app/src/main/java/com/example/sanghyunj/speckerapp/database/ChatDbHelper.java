@@ -7,10 +7,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.sanghyunj.speckerapp.model.ChatMessage;
+import com.example.sanghyunj.speckerapp.retrofit.Response.Friend;
+
 import static com.example.sanghyunj.speckerapp.database.ChatContract.*;
 import static com.example.sanghyunj.speckerapp.database.ChatContract.ChatEntry.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by rapsealk on 2017. 11. 8..
@@ -21,9 +24,14 @@ public class ChatDbHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "SpeckerChat.db";
 
+    private FriendDbHelper mFriendDbHelper;
+    private HashMap<String, String> profileMap;
+
     // TODO Singleton
     public ChatDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        mFriendDbHelper = new FriendDbHelper(context);
+        profileMap = new HashMap<>();
     }
 
     @Override
@@ -93,11 +101,20 @@ public class ChatDbHelper extends SQLiteOpenHelper {
         ArrayList<ChatMessage> mChatMessages = new ArrayList<>();
         for (int i = 0; i < cursor.getCount(); i++) {
             String author = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_AUTHOR));
+            String profile = profileMap.get(author);
+            if (profile == null) {
+                Friend friend = mFriendDbHelper.getFriendById(author);
+                if (friend != null) {
+                    profile = friend.getProfile();
+                    profileMap.put(author, profile);
+                }
+            }
             String message = cursor.getString(cursor.getColumnIndex(COLUMN_NAME_MESSAGE));
             long timestamp = cursor.getLong(cursor.getColumnIndex(COLUMN_NAME_TIMESTAMP));
-            mChatMessages.add(new ChatMessage(message, author, "", ""));
+            mChatMessages.add(new ChatMessage(message, author, profile, ""));
             cursor.moveToNext();
         }
+        // TODO PROFILE
         return mChatMessages;
     }
 

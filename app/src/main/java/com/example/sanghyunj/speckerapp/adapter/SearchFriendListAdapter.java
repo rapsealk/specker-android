@@ -99,7 +99,8 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
                                         String token = task.getResult().getToken();
                                         Api api = Api.retrofit.create(Api.class);
                                         long timestamp = System.currentTimeMillis();
-                                        Call<DefaultResponse> call = api.addFriend(token, new AddFriendBody(user.getId(), timestamp));
+                                        Log.d("AddFriend", "Friend uid: " + user.getUid());
+                                        Call<DefaultResponse> call = api.addFriend(token, new AddFriendBody(user.getUid(), timestamp));
                                         new AddFriendTask(position, timestamp).execute(call);
                                     }
                                 }
@@ -178,7 +179,7 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
             SearchedUser addedFriend = (SearchedUser) item.getElement();
             FriendFragment.friendListAdapter.addChatItem(new FriendListItem(addedFriend));
             FriendFragment.friendListAdapter.notifyDataSetChanged();
-            long newRowid = mDbHelper.insertFriend(mFirebaseAuth.getCurrentUser().getUid(), new Friend(addedFriend.getId(), addedFriend.getName(), addedFriend.getProfile(), timestamp));
+            long newRowid = mDbHelper.insertFriend(mFirebaseAuth.getCurrentUser().getUid(), new Friend(addedFriend.getUid(), addedFriend.getName(), addedFriend.getProfile(), timestamp));
             Log.d("Friend Added", "Row Id: " + newRowid);
             searchedListItemList.remove(position);
             notifyDataSetChanged();

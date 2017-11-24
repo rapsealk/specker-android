@@ -46,7 +46,7 @@ public class FriendDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues value = new ContentValues();
         value.put(COLUMN_NAME_USER_ID, userId);
-        value.put(COLUMN_NAME_FRIEND_ID, friend.getId());
+        value.put(COLUMN_NAME_FRIEND_ID, friend.getUid());
         value.put(COLUMN_FRIEND_NAME, friend.getName());
         value.put(COLUMN_NAME_PROFILE_IMAGE, friend.getProfile());
         value.put(COLUMN_NAME_STATUS_MESSAGE, "");  // TODO

@@ -79,6 +79,7 @@ public class ChatListAdapter extends BaseAdapter {
         private TextView userName;
         private TextView lastTimestamp;
         private TextView lastChat;
+        private TextView unreadCount;
     }
 }
 

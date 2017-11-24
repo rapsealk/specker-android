@@ -36,6 +36,7 @@ import com.example.sanghyunj.speckerapp.fragment.SurfingFragment;
 import com.example.sanghyunj.speckerapp.listener.OnActionListener;
 import com.example.sanghyunj.speckerapp.model.User;
 
+import com.example.sanghyunj.speckerapp.retrofit.Body.ChatroomMetaBody;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -308,17 +309,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("BroadcastReceiver", "onReceive with action RECEIVE_CHAT");
-            Log.d("message", intent.getStringExtra("message"));
             // TODO FIX POSITION
             String room = intent.getStringExtra("room");
-            for (int i = 0; i < ChatFragment.mChatRooms.size(); i++) {
-                if (ChatFragment.mChatRooms.get(i)._id.equals(room)) {
-                    ChatFragment.mChatRooms.get(i).lastChat = intent.getStringExtra("message");
-                    ChatFragment.mChatRooms.get(i).lastTimestamp = intent.getLongExtra("timestamp", System.currentTimeMillis());
-                    ChatFragment.adapter.notifyDataSetChanged();
+            String message = intent.getStringExtra("message");
+            long timestamp = intent.getLongExtra("timestamp", System.currentTimeMillis());
+            int index = 0;
+            for (index = 0; index < ChatFragment.mChatRooms.size(); index++) {
+                if (ChatFragment.mChatRooms.get(index)._id.equals(room)) {
+                    ChatFragment.mChatRooms.get(index).lastChat = message;
+                    ChatFragment.mChatRooms.get(index).lastTimestamp = timestamp;
                     break;
                 }
             }
+            if (index == ChatFragment.mChatRooms.size()) {
+                ChatFragment.mChatRooms.add(new ChatroomMetaBody(room, 2, message, timestamp));
+            }
+            ChatFragment.adapter.notifyDataSetChanged();
         }
     }
 }

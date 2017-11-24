@@ -24,8 +24,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.database.ChatDbHelper;
+import com.example.sanghyunj.speckerapp.database.FriendDbHelper;
 import com.example.sanghyunj.speckerapp.fragment.ChatFragment;
 import com.example.sanghyunj.speckerapp.model.ChatMessage;
 
@@ -34,6 +36,7 @@ import com.example.sanghyunj.speckerapp.retrofit.ChatLog;
 import com.example.sanghyunj.speckerapp.retrofit.ChatRequest;
 import com.example.sanghyunj.speckerapp.retrofit.GetChatBody;
 import com.example.sanghyunj.speckerapp.retrofit.GetChatResponse;
+import com.example.sanghyunj.speckerapp.retrofit.Response.Friend;
 import com.example.sanghyunj.speckerapp.util.GlobalVariable;
 import com.example.sanghyunj.speckerapp.util.SharedPreferenceManager;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -124,8 +127,23 @@ public class ChatActivity extends Activity {
             // viewHolder.messengerTextView.setText(messages.get(position).getName());
             // viewHolder.messengerTextView.setVisibility(TextView.VISIBLE);
             // viewHolder.messengerImageView.setVisibility(ImageView.GONE);
+
             if (!message.getName().equals(mSender)) {
-                viewHolder.messengerTextView.setText(messages.get(position).getName());
+                String fUid = messages.get(position).getName();
+                Log.d("fUid", fUid);
+                Friend sender = mFriendDbHelper.getFriendById(fUid);
+                if (sender != null) {
+                    Log.d("sender", sender.toString());
+                    viewHolder.messengerTextView.setText(sender.name);
+                    String profile = sender.getProfile();
+                    if (profile != null) {
+                        Glide.with(getApplicationContext()).load(profile).into(viewHolder.messengerImageView);
+                    }
+                } else {
+                    Log.d("sender", "is null");
+                    viewHolder.messengerTextView.setText(messages.get(position).getName());
+                    // Glide.with(getApplicationContext()).load(messages.get(position).getPhotoUrl()).into(viewHolder.messengerImageView);
+                }
                 viewHolder.messengerTextView.setVisibility(TextView.VISIBLE);
             }
         }
@@ -170,11 +188,14 @@ public class ChatActivity extends Activity {
     private int mChatroomCount;
 
     private ChatDbHelper mDbHelper;
+    private FriendDbHelper mFriendDbHelper;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        // TODO set unreadCount to 0
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = mFirebaseAuth.getCurrentUser();
@@ -203,6 +224,8 @@ public class ChatActivity extends Activity {
         mDbHelper = new ChatDbHelper(getApplicationContext());
         long lastChatTimestamp = mDbHelper.getLastChatTimestamp(mRoomId);
         Log.d("LastChatTimestamp", Long.toString(lastChatTimestamp));
+
+        mFriendDbHelper = new FriendDbHelper(getApplicationContext());
 
         // socket.io
         try {
@@ -237,7 +260,8 @@ public class ChatActivity extends Activity {
                         if (author.equals(mSender)) return;
                         String message = (String) data.get("message");
                         long timestamp = (long) data.get("timestamp");
-                        mChatMessages.add(new ChatMessage(message, author, "", ""));
+                        String profileUrl = (String) data.get("profile");
+                        mChatMessages.add(new ChatMessage(message, author, profileUrl, ""));
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

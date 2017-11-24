@@ -8,13 +8,13 @@ import com.example.sanghyunj.speckerapp.model.Element;
 
 public class Friend implements Element {
 
-    public String _id;
+    public String uid;
     public String name;
     public String gravatar;
     public long timestamp;
 
-    public Friend(String _id, String name, String gravatar, long timestamp) {
-        this._id = _id;
+    public Friend(String uid, String name, String gravatar, long timestamp) {
+        this.uid = uid;
         this.name = name;
         this.gravatar = gravatar;
         this.timestamp = timestamp;
@@ -35,13 +35,13 @@ public class Friend implements Element {
     public String getProfile() { return gravatar; }
 
     @Override
-    public String getUid() { return ""; }
+    public String getUid() { return uid; }
 
     @Override
-    public String getId() { return _id; }
+    public String getId() { return ""; }
 
     @Override
     public String toString() {
-        return "{ _id: " + _id + ", name: " + name + ", gravatar: " + gravatar + " }";
+        return "{ uid: " + uid + ", name: " + name + ", gravatar: " + gravatar + " }";
     }
 }
