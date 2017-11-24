@@ -2,6 +2,7 @@ package com.example.sanghyunj.speckerapp.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 /**
  * Created by rapsealk on 2017. 11. 17..
@@ -26,11 +27,24 @@ public class SharedPreferenceManager {
         mEdit = mSharedPreferences.edit();
     }
 
+    public boolean setRoomStatus(String roomId, boolean onUse) {
+        mEdit.putBoolean(CHATROOM_ON_USE + roomId, onUse);
+        return mEdit.commit();
+    }
+
     public boolean getRoomStatus(String roomId) {
         return mSharedPreferences.getBoolean(CHATROOM_ON_USE + roomId, false);
     }
 
-    public void setRoomStatus(String roomId, boolean onUse) {
-        mEdit.putBoolean(CHATROOM_ON_USE + roomId, onUse);
+    public boolean setUnreadChatCount(String roomId, int count) {
+        Log.d("setUnreadChatCount", "Room: " + roomId + ", count: " + count);
+        mEdit.putInt("unread_" + roomId, count);
+        return mEdit.commit();
+    }
+
+    public int getUnreadChatCount(String roomId) {
+        int unreadCount = mSharedPreferences.getInt("unread_" + roomId, 0);
+        Log.d("getUnreadChatCount", "Room: " + roomId + ", count: " + unreadCount);
+        return unreadCount;
     }
 }

@@ -163,7 +163,7 @@ public class ChatActivity extends Activity {
     private String mUsername;
     private String mObjectId;   // TODO: SharedPreference
     private String mPhotoUrl;
-    private SharedPreferences mSharedPreferences;
+    private SharedPreferenceManager mSharedPreferenceManager;
     private GoogleApiClient mGoogleApiClient;
 
     private ArrayList<ChatMessage> mChatMessages = new ArrayList<>();
@@ -194,8 +194,6 @@ public class ChatActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        // TODO set unreadCount to 0
-
         mFirebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = mFirebaseAuth.getCurrentUser();
 
@@ -208,6 +206,11 @@ public class ChatActivity extends Activity {
         mSender = firebaseUser.getUid();
         mRoomId = getIntent().getStringExtra("_id");
         Log.d("ChatActivity", "roomId: " + mRoomId);
+
+        // TODO set unreadCount to 0
+        mSharedPreferenceManager = SharedPreferenceManager.getInstance(this);
+        mSharedPreferenceManager.setUnreadChatCount(mRoomId, 0);
+        ChatFragment.adapter.notifyDataSetChanged();
 
         for (mChatroomCount = 0; mChatroomCount < ChatFragment.mChatRooms.size(); mChatroomCount++) {
             if (ChatFragment.mChatRooms.get(mChatroomCount)._id.equals(mRoomId)) break;
@@ -281,8 +284,6 @@ public class ChatActivity extends Activity {
         catch (URISyntaxException ex) {
             ex.printStackTrace();
         }
-
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mMessageRecyclerView = (RecyclerView) findViewById(R.id.messageRecyclerView);

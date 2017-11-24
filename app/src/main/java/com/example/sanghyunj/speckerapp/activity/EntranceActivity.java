@@ -29,6 +29,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -42,8 +43,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
  */
 
 public class EntranceActivity extends AppCompatActivity {
-    CallbackManager callbackManager;
 
+    CallbackManager callbackManager;
 
     FirebaseAuth.AuthStateListener mFirebaseAuthListener;
 
@@ -72,7 +73,7 @@ public class EntranceActivity extends AppCompatActivity {
         googleSetUp();
         facebookSetUp();
 
-        // FIXME: Temporary Login Method
+        /* FIXME: Temporary Login Method
         TextView email = (TextView) findViewById(R.id.email);
         TextView password = (TextView) findViewById(R.id.password);
         Button loginButton = (Button) findViewById(R.id.loginButton);
@@ -80,7 +81,10 @@ public class EntranceActivity extends AppCompatActivity {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                firebaseAuth.createUserWithEmailAndPassword(email.toString(), password.toString())
+                String _email = email.getEditableText().toString();
+                String _password = password.getEditableText().toString();
+                Log.d("User Info", "email: " + _email + ", password: " + _password);
+                firebaseAuth.createUserWithEmailAndPassword(_email, _password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -88,6 +92,12 @@ public class EntranceActivity extends AppCompatActivity {
                                     startActivity(new Intent(EntranceActivity.this, MainActivity.class));
                                     finish();
                                 }
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                e.printStackTrace();
                             }
                         });
             }
@@ -95,7 +105,10 @@ public class EntranceActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                firebaseAuth.signInWithEmailAndPassword(email.toString(), password.toString())
+                String _email = email.getEditableText().toString();
+                String _password = password.getEditableText().toString();
+                Log.d("User Info", "email: " + _email + ", password: " + _password);
+                firebaseAuth.signInWithEmailAndPassword(_email, _password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -104,9 +117,16 @@ public class EntranceActivity extends AppCompatActivity {
                                     finish();
                                 }
                             }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                e.printStackTrace();
+                            }
                         });
             }
         });
+        */
     }
 
     public void firebaseSetUp(){

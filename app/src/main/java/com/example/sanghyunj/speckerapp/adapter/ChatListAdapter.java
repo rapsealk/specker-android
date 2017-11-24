@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.retrofit.Body.ChatroomMetaBody;
+import com.example.sanghyunj.speckerapp.util.SharedPreferenceManager;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ public class ChatListAdapter extends BaseAdapter {
     private SimpleDateFormat todayFormat;
     private SimpleDateFormat yesterdayFormat;
 
+    private SharedPreferenceManager mSharedPreferenceManager;
+
     public ChatListAdapter(Context context, List<ChatroomMetaBody> chatrooms) {
         this.context = context;
         mInflater = LayoutInflater.from(context);
@@ -37,6 +40,8 @@ public class ChatListAdapter extends BaseAdapter {
 
         todayFormat = new SimpleDateFormat("a hh:mm");
         yesterdayFormat = new SimpleDateFormat("y.M.d");
+
+        mSharedPreferenceManager = SharedPreferenceManager.getInstance(context);
     }
 
     @Override
@@ -54,6 +59,7 @@ public class ChatListAdapter extends BaseAdapter {
             viewHolder.userName = (TextView) convertView.findViewById(R.id.userName);
             viewHolder.lastChat = (TextView) convertView.findViewById(R.id.lastChat);
             viewHolder.lastTimestamp = (TextView) convertView.findViewById(R.id.lastTimestamp);
+            viewHolder.unreadCount = (TextView) convertView.findViewById(R.id.chatCount);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -64,6 +70,8 @@ public class ChatListAdapter extends BaseAdapter {
         viewHolder.userName.setText(item._id + ((item.participants > 2) ? "(" + item.participants + ")" : ""));
         viewHolder.lastChat.setText(item.lastChat);
         if (item.lastTimestamp > 0) viewHolder.lastTimestamp.setText(todayFormat.format(item.lastTimestamp));
+        int unreadCount = mSharedPreferenceManager.getUnreadChatCount(item._id);
+        viewHolder.unreadCount.setText(unreadCount > 0 ? Integer.toString(unreadCount) : "");
 
         return convertView;
     }

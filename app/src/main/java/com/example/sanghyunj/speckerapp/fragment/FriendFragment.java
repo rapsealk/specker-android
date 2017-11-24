@@ -106,6 +106,7 @@ public class FriendFragment extends Fragment implements FriendListObserver{
             }
         });
         // Log.d("asdsadasd","sadasdasdas");
+        // TODO check friends list
         Firebase.getInstance().addFriendListObserver(this);
         Firebase.getInstance().notifyFriendListObserver();
 

@@ -38,6 +38,7 @@ import com.example.sanghyunj.speckerapp.listener.OnActionListener;
 import com.example.sanghyunj.speckerapp.model.User;
 
 import com.example.sanghyunj.speckerapp.retrofit.Body.ChatroomMetaBody;
+import com.example.sanghyunj.speckerapp.util.SharedPreferenceManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -84,12 +85,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     final String TAG = MainActivity.class.getName();
 
+    private SharedPreferenceManager mSharedPreferenceManager;
     private ChatBroadcastReceiver chatBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mSharedPreferenceManager = SharedPreferenceManager.getInstance(this);
 
         chatBroadcastReceiver = new ChatBroadcastReceiver();
         registerReceiver(chatBroadcastReceiver, new IntentFilter("com.example.sanghyunj.speckerapp.RECEIVE_CHAT"));
@@ -351,6 +355,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
             if (index == ChatFragment.mChatRooms.size()) {
                 ChatFragment.mChatRooms.add(0, new ChatroomMetaBody(room, 2, message, timestamp));
+            }
+            if (!mSharedPreferenceManager.getRoomStatus(room)) {
+                mSharedPreferenceManager.setUnreadChatCount(room, mSharedPreferenceManager.getUnreadChatCount(room) + 1);
             }
             ChatFragment.adapter.notifyDataSetChanged();
         }

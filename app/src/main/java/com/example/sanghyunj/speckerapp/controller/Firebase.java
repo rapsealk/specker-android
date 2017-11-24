@@ -56,6 +56,7 @@ public class Firebase implements Publisher {
         friendListUser.setEmail(firebaseUser.getEmail());
         friendListUser.setFcmToken(FirebaseInstanceId.getInstance().getToken());
         friendListUser.setName(firebaseUser.getDisplayName());
+        // TODO fails when signInWithEmailAndPassword
         friendListUser.setProfile(firebaseUser.getPhotoUrl().toString());
         friendListUser.setUid(firebaseUser.getUid());
 
