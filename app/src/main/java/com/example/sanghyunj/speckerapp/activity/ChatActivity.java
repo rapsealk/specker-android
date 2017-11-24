@@ -113,7 +113,6 @@ public class ChatActivity extends Activity {
             int layout = (viewType == MY_MESSAGE) ? R.layout.item_my_message : R.layout.item_message;
             View view = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
             view.findViewById(R.id.messageTextView).setBackgroundResource((viewType == MY_MESSAGE) ? R.drawable.chat_right : R.drawable.chat_left);
-            // view.setBackgroundResource((viewType == MY_MESSAGE) ? R.drawable.chat_right : R.drawable.chat_left);
             MessageViewHolder viewHolder = new MessageViewHolder(view);
             return viewHolder;
         }

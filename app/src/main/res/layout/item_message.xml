@@ -9,6 +9,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
         android:gravity="center_vertical">
 
         <de.hdodenhof.circleimageview.CircleImageView
@@ -26,10 +27,21 @@
             android:layout_marginTop="8dp" >
 
             <TextView
+                android:id="@+id/messengerTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="사용자 이름"
+                android:layout_marginBottom="5dp"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
                 android:id="@+id/messageTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
+                android:layout_marginBottom="5dp"
+                android:text="채팅 내용"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textSize="18sp" />
 
@@ -41,12 +53,6 @@
                 android:background="@color/colorPrimary"
                 android:scaleType="fitCenter"/>
 
-            <TextView
-                android:id="@+id/messengerTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                android:textAppearance="?android:attr/textAppearanceSmall"/>
         </LinearLayout>
 
     </LinearLayout>

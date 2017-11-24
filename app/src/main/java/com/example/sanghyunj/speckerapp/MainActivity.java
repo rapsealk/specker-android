@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -68,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    private TabLayout tabLayout;
+    // private boolean mXORFlag;
+    private int[] tabIcons;
 
     private FirebaseDatabase mFirebaseDatabaseReference;
     private FirebaseAuth firebaseAuth;
@@ -129,16 +133,53 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
+        tabIcons = new int[] {
+                R.drawable.tab_users_1x,
+                R.drawable.tab_chat_1x,
+                R.drawable.tab_feed_1x,
+                R.drawable.tab_surf_1x,
+                R.drawable.tab_mypage_1x
+        };
+
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Log.d("onPageSelected", "position: " + position);
+                tabLayout.getTabAt(0).setIcon(R.drawable.tab_users_gray_1x);
+                tabLayout.getTabAt(1).setIcon(R.drawable.tab_chat_gray_1x);
+                tabLayout.getTabAt(2).setIcon(R.drawable.tab_feed_gray_1x);
+                tabLayout.getTabAt(3).setIcon(R.drawable.tab_surf_gray_1x);
+                tabLayout.getTabAt(4).setIcon(R.drawable.tab_mypage_gray_1x);
+                tabLayout.getTabAt(position).setIcon(tabIcons[position]);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+        tabLayout.getTabAt(0).setIcon(R.drawable.tab_users_1x);
+        tabLayout.getTabAt(1).setIcon(R.drawable.tab_chat_gray_1x);
+        tabLayout.getTabAt(2).setIcon(R.drawable.tab_feed_gray_1x);
+        tabLayout.getTabAt(3).setIcon(R.drawable.tab_surf_gray_1x);
+        tabLayout.getTabAt(4).setIcon(R.drawable.tab_mypage_gray_1x);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -197,22 +238,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         private SurfingFragment surfingFragment = null;
         private SettingFragment settingFragment = null;
 
-        private ArrayList<CharSequence> pageTitles = null;
-
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
-            pageTitles = new ArrayList<>();
-            pageTitles.add("친구목록");
-            pageTitles.add("채팅");
-            pageTitles.add("홈");
-            pageTitles.add("서핑");
-            pageTitles.add("정보");
         }
 
         @Override
         public Fragment getItem(int position) {
 
-            //position %= 5;
+            position %= 5;
 
             Log.d("SectionFragment", "position is " + position);
 
@@ -251,14 +284,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return pageTitles.size();
-            // return 3; // 5;
+            return 5;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            Log.d("Page", "Number: " + position);
-            return pageTitles.get(position);
             /*
             switch (position) {
                 case 0:
@@ -267,15 +297,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     return "채팅";
                 case 2:
                     return "홈";
-
                 case 3:
                     return "서핑";
                 case 4:
                     return "정보";
-
             }
-            return null;
             */
+            return null;
         }
     }
 
@@ -309,20 +337,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("BroadcastReceiver", "onReceive with action RECEIVE_CHAT");
-            // TODO FIX POSITION
             String room = intent.getStringExtra("room");
             String message = intent.getStringExtra("message");
             long timestamp = intent.getLongExtra("timestamp", System.currentTimeMillis());
-            int index = 0;
+            int index = -1;
             for (index = 0; index < ChatFragment.mChatRooms.size(); index++) {
                 if (ChatFragment.mChatRooms.get(index)._id.equals(room)) {
                     ChatFragment.mChatRooms.get(index).lastChat = message;
                     ChatFragment.mChatRooms.get(index).lastTimestamp = timestamp;
+                    ChatFragment.mChatRooms.add(0, ChatFragment.mChatRooms.remove(index));
                     break;
                 }
             }
             if (index == ChatFragment.mChatRooms.size()) {
-                ChatFragment.mChatRooms.add(new ChatroomMetaBody(room, 2, message, timestamp));
+                ChatFragment.mChatRooms.add(0, new ChatroomMetaBody(room, 2, message, timestamp));
             }
             ChatFragment.adapter.notifyDataSetChanged();
         }
