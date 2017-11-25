@@ -3,11 +3,13 @@ package com.example.sanghyunj.speckerapp.fragment;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -87,7 +89,25 @@ public class ChatFragment extends Fragment {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 // TODO("Alert Dialog")
-                return false;
+                ChatroomMetaBody room = (ChatroomMetaBody) parent.getItemAtPosition(position);
+                CharSequence[] items = { "삭제", "취소" };
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(room._id)
+                        .setItems(items, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case 0: {
+                                        Toast.makeText(getContext(), room._id + " 삭제", Toast.LENGTH_SHORT).show();
+                                    }
+                                    case 1: {
+                                        Toast.makeText(getContext(), room._id + " 취소", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                                dialog.dismiss();
+                            }
+                        });
+                builder.show();
+                return true;
             }
         });
 

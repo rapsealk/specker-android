@@ -58,7 +58,7 @@ public class FriendFragment extends Fragment implements FriendListObserver{
     private FirebaseAuth mFirebaseAuth;
 
     public FriendDbHelper mDbHelper;
-    private long mLastFriendAddedAt = -1;
+    public static long mLastFriendAddedAt = -1;
 
     public FriendFragment() { }
 
@@ -105,6 +105,7 @@ public class FriendFragment extends Fragment implements FriendListObserver{
                 }
             }
         });
+
         // Log.d("asdsadasd","sadasdasdas");
         // TODO check friends list
         Firebase.getInstance().addFriendListObserver(this);
@@ -114,12 +115,9 @@ public class FriendFragment extends Fragment implements FriendListObserver{
 
         ArrayList<Friend> mFriends = mDbHelper.getFriends();
         for (Friend friend: mFriends) {
-            Log.d("Friend", friend.getId() + " " + friend.getTimestamp());
             friendListAdapter.addChatItem(new FriendListItem(friend));
-            // friendListItemList.add(new FriendListItem(friend));
             mLastFriendAddedAt = friend.getTimestamp();
         }
-        // update(friendListItemList);
         friendListAdapter.notifyDataSetChanged();
 
         Api api = Api.retrofit.create(Api.class);
@@ -220,11 +218,11 @@ public class FriendFragment extends Fragment implements FriendListObserver{
 
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
-                        for (Friend user: response.body().friends) {
-                            // friendListItemList.add(new FriendListItem(user));
-                            friendListAdapter.addChatItem(new FriendListItem(user));
-                            long newRowId = mDbHelper.insertFriend(mFirebaseAuth.getCurrentUser().getUid(), user);
-                            Log.d("FriendListItem", user.toString());
+                        for (Friend friend: response.body().friends) {
+                            friendListAdapter.addChatItem(new FriendListItem(friend));
+                            mLastFriendAddedAt = friend.getTimestamp();
+                            long newRowId = mDbHelper.insertFriend(mFirebaseAuth.getCurrentUser().getUid(), friend);
+                            Log.d("FriendListItem", friend.toString());
                             Log.d("Friend Inserted", "Row: " + newRowId);
                         }
                         return response.code() + " " + response.body().toString();
@@ -242,7 +240,6 @@ public class FriendFragment extends Fragment implements FriendListObserver{
         @Override
         protected void onPostExecute(String result) {
             Log.d("AsyncTask", result);
-            // update(friendListItemList);
             friendListAdapter.notifyDataSetChanged();
         }
     }

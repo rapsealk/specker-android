@@ -24,6 +24,7 @@ import com.example.sanghyunj.speckerapp.retrofit.Body.AddFriendBody;
 import com.example.sanghyunj.speckerapp.retrofit.DefaultResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.Friend;
 import com.example.sanghyunj.speckerapp.retrofit.Response.SearchedUser;
+import com.example.sanghyunj.speckerapp.util.OrderingByKoreanEnglishNumberSpecial;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -31,6 +32,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -177,12 +179,14 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
             Log.d("AsyncTask", result);
             SearchedListItem item = searchedListItemList.get(position);
             SearchedUser addedFriend = (SearchedUser) item.getElement();
-            FriendFragment.friendListAdapter.addChatItem(new FriendListItem(addedFriend));
-            FriendFragment.friendListAdapter.notifyDataSetChanged();
-            long newRowid = mDbHelper.insertFriend(mFirebaseAuth.getCurrentUser().getUid(), new Friend(addedFriend.getUid(), addedFriend.getName(), addedFriend.getProfile(), timestamp));
+            Friend mNewFriend = new Friend(addedFriend.getUid(), addedFriend.getName(), addedFriend.getProfile(), timestamp);
+            long newRowid = mDbHelper.insertFriend(mFirebaseAuth.getCurrentUser().getUid(), mNewFriend);
             Log.d("Friend Added", "Row Id: " + newRowid);
             searchedListItemList.remove(position);
             notifyDataSetChanged();
+            FriendFragment.friendListAdapter.addChatItem(new FriendListItem(addedFriend));
+            FriendFragment.friendListAdapter.notifyDataSetChanged();
+            FriendFragment.mLastFriendAddedAt = timestamp;
         }
     }
 }

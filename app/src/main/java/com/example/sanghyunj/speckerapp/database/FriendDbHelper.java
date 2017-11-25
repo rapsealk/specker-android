@@ -66,7 +66,7 @@ public class FriendDbHelper extends SQLiteOpenHelper {
                 COLUMN_NAME_PROFILE_IMAGE,
                 COLUMN_NAME_TIMESTAMP
         };
-        String sortOrder = COLUMN_FRIEND_NAME + " DESC"; // COLUMN_NAME_TIMESTAMP + " DESC";
+        String sortOrder = COLUMN_NAME_TIMESTAMP + " ASC";
 
         Cursor cursor = db.query(TABLE_NAME, projection, null, null, null, null, sortOrder);
         cursor.moveToFirst();
@@ -79,6 +79,7 @@ public class FriendDbHelper extends SQLiteOpenHelper {
             long timestamp = cursor.getLong(cursor.getColumnIndex(COLUMN_NAME_TIMESTAMP));
             Friend mFriend = new Friend(_id, name, gravatar, timestamp);
             mFriends.add(mFriend);
+            cursor.moveToNext();
         }
         return mFriends;
     }

@@ -15,8 +15,10 @@ import com.example.sanghyunj.speckerapp.listener.OnFriendListItemClickListener;
 import com.example.sanghyunj.speckerapp.model.FriendList.FriendListItem;
 import com.example.sanghyunj.speckerapp.model.User;
 import com.example.sanghyunj.speckerapp.util.ChatListConverter;
+import com.example.sanghyunj.speckerapp.util.OrderingByKoreanEnglishNumberSpecial;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -47,6 +49,7 @@ public class FriendListAdapter extends BaseAdapter implements StickyListHeadersA
 
     public void addChatItem(FriendListItem friendListItem) {
         this.friendListItemList.add(friendListItem);
+        sortItemsByName();
     }
 
     public void setChatItems(List<FriendListItem> friendListItemList) {
@@ -185,4 +188,8 @@ public class FriendListAdapter extends BaseAdapter implements StickyListHeadersA
         CircleImageView profile_image;
     }
 
+    public void sortItemsByName() {
+        Collections.sort(this.friendListItemList, OrderingByKoreanEnglishNumberSpecial.getComparator());
+        // notifyDataSetChanged();
+    }
 }

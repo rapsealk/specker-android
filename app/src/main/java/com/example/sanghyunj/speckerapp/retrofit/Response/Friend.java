@@ -20,7 +20,7 @@ public class Friend implements Element {
         this.timestamp = timestamp;
     }
 
-    public long getTimestamp() { return this.timestamp; }
+    public long getTimestamp() { return timestamp; }
 
     @Override
     public String getName() { return name; }
