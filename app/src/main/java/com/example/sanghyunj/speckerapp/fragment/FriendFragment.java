@@ -2,15 +2,18 @@ package com.example.sanghyunj.speckerapp.fragment;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.activity.UserActivity;
@@ -20,9 +23,12 @@ import com.example.sanghyunj.speckerapp.controller.Firebase;
 import com.example.sanghyunj.speckerapp.controller.FriendListObserver;
 import com.example.sanghyunj.speckerapp.database.FriendDbHelper;
 import com.example.sanghyunj.speckerapp.listener.OnFriendListItemClickListener;
+import com.example.sanghyunj.speckerapp.listener.OnFriendListItemLongClickListener;
 import com.example.sanghyunj.speckerapp.model.FriendList.FriendListItem;
 import com.example.sanghyunj.speckerapp.retrofit.Api;
 import com.example.sanghyunj.speckerapp.retrofit.Body.GetFriendListBody;
+import com.example.sanghyunj.speckerapp.retrofit.Body.RemoveFriendBody;
+import com.example.sanghyunj.speckerapp.retrofit.DefaultResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.Friend;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetFriendsListResponse;
 import com.example.sanghyunj.speckerapp.util.OrderingByKoreanEnglishNumberSpecial;
@@ -92,7 +98,6 @@ public class FriendFragment extends Fragment implements FriendListObserver{
         });
 
         mListView.setAdapter(friendListAdapter);
-        // friendListAdapter.notifyDataSetChanged();
 
         mListView.setVerticalScrollBarEnabled(false);
         mListView.setOnHeaderClickListener(new StickyListHeadersListView.OnHeaderClickListener() {
@@ -128,7 +133,7 @@ public class FriendFragment extends Fragment implements FriendListObserver{
                         if (task.isSuccessful()) {
                             String token = task.getResult().getToken();
                             Call<GetFriendsListResponse> call = api.getFriendsList(token, new GetFriendListBody(mLastFriendAddedAt));
-                            new SearchUserTask().execute(call);
+                            new GetFriendsListFromServerTask().execute(call);
                         }
                     }
                 })
@@ -208,7 +213,7 @@ public class FriendFragment extends Fragment implements FriendListObserver{
         friendListAdapter.notifyDataSetChanged();
     }
 
-    private class SearchUserTask extends AsyncTask<Call, Void, String> {
+    private class GetFriendsListFromServerTask extends AsyncTask<Call, Void, String> {
 
         @Override
         protected String doInBackground(Call... params) {
@@ -240,6 +245,41 @@ public class FriendFragment extends Fragment implements FriendListObserver{
         @Override
         protected void onPostExecute(String result) {
             Log.d("AsyncTask", result);
+            friendListAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private class RemoveFriendTask extends AsyncTask<Call, Void, String> {
+
+        private String friendUid;
+
+        public RemoveFriendTask(String friendUid) {
+            this.friendUid = friendUid;
+        }
+
+        @Override
+        protected String doInBackground(Call... params) {
+            Call<DefaultResponse> call = params[0];
+            Response<DefaultResponse> response;
+            try {
+                response = call.execute();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+                return e.toString();
+            }
+            if (!response.isSuccessful()) return response.code() + " response failed";
+            if (response.body() == null) return response.code() + " response.body() is null";
+            if (response.body().result.equals("ok")) {
+                int result = mDbHelper.removeFriend(mFirebaseAuth.getCurrentUser().getUid(), friendUid);
+                Log.d("Remove Friend", "result: " + result + ", friend: " + friendUid);
+                friendListAdapter.removeChatItemByUid(friendUid);
+            }
+            return response.body().result;
+        }
+
+        @Override protected void onPostExecute(String result) {
+            Log.d("RemoveFriendTask", result);
             friendListAdapter.notifyDataSetChanged();
         }
     }

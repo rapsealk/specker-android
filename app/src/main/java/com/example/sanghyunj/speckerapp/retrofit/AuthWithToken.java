@@ -15,12 +15,6 @@ import retrofit2.http.POST;
 
 public interface AuthWithToken {
 
-    @POST("signUp")
-    Call<DefaultResponse> signUp(
-            @Header("Authorization") String authorization,
-            @Body SignUpUser body
-    );
-
     @POST("updateToken")
     Call<DefaultResponse> updateToken(
         @Header("Authorization") String authorization,

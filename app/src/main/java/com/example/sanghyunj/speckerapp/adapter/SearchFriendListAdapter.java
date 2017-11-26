@@ -81,7 +81,9 @@ public class SearchFriendListAdapter extends RecyclerView.Adapter<SearchFriendLi
 
         Log.d("Adapter", "isKnown: " + user.isKnow() + ", name: " + user.getName());
 
-        if (user.isKnow()) {
+        if (user.getUid().equals(mFirebaseAuth.getCurrentUser().getUid())) {
+            holder.addFriend.setVisibility(View.GONE);
+        } else if (user.isKnow()) {
             holder.statusMessage.setText("친구");
             holder.statusMessage.setVisibility(View.VISIBLE);
             holder.addFriend.setVisibility(View.GONE);

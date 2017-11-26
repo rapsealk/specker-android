@@ -12,10 +12,12 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.listener.OnFriendListItemClickListener;
+import com.example.sanghyunj.speckerapp.listener.OnFriendListItemLongClickListener;
 import com.example.sanghyunj.speckerapp.model.FriendList.FriendListItem;
 import com.example.sanghyunj.speckerapp.model.User;
 import com.example.sanghyunj.speckerapp.util.ChatListConverter;
 import com.example.sanghyunj.speckerapp.util.OrderingByKoreanEnglishNumberSpecial;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,23 +35,35 @@ public class FriendListAdapter extends BaseAdapter implements StickyListHeadersA
     private final Context mContext;
     private List<FriendListItem> friendListItemList;
     private String[] chatListIndicator;
-    private int k = 0;
+
+    private FirebaseAuth mFirebaseAuth;
 
     private int[] mSectionIndices = { 0 };
 
     private LayoutInflater mInflater;
 
     private OnFriendListItemClickListener onFriendListItemClickListener;
+    private OnFriendListItemLongClickListener onFriendListItemLongClickListener;
 
     public FriendListAdapter(Context context) {
         mContext = context;
         mInflater = LayoutInflater.from(context);
         chatListIndicator = context.getResources().getStringArray(R.array.chatListIndicator);
+        mFirebaseAuth = FirebaseAuth.getInstance();
     }
 
     public void addChatItem(FriendListItem friendListItem) {
         this.friendListItemList.add(friendListItem);
         sortItemsByName();
+    }
+
+    public void removeChatItemByUid(String uid) {
+        for (int i = 0; i < friendListItemList.size(); i++) {
+            if (friendListItemList.get(i).getUid().equals(uid)) {
+                friendListItemList.remove(i);
+                break;
+            }
+        }
     }
 
     public void setChatItems(List<FriendListItem> friendListItemList) {
@@ -60,6 +74,10 @@ public class FriendListAdapter extends BaseAdapter implements StickyListHeadersA
     public void setOnFriendListItemClickListener(OnFriendListItemClickListener onFriendListItemClickListener) {
         this.onFriendListItemClickListener = onFriendListItemClickListener;
     }
+
+    // public void setOnFriendListItemLongClickListener(OnFriendListItemLongClickListener onFriendListItemLongClickListener) {
+    //     this.onFriendListItemLongClickListener = onFriendListItemLongClickListener;
+    // }
 
     @Override
     public int getCount() {
@@ -189,7 +207,17 @@ public class FriendListAdapter extends BaseAdapter implements StickyListHeadersA
     }
 
     public void sortItemsByName() {
+        String uid = mFirebaseAuth.getCurrentUser().getUid();
+        FriendListItem item = null;
+        for (int i = 0; i < friendListItemList.size(); i++) {
+            item = friendListItemList.get(i);
+            if (item.getUid().equals(uid)) {
+                friendListItemList.remove(i);
+                break;
+            }
+        }
         Collections.sort(this.friendListItemList, OrderingByKoreanEnglishNumberSpecial.getComparator());
+        if (item != null) friendListItemList.add(0, item);
         // notifyDataSetChanged();
     }
 }

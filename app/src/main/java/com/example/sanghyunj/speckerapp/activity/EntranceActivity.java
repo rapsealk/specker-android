@@ -1,6 +1,7 @@
 package com.example.sanghyunj.speckerapp.activity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,6 +15,9 @@ import android.widget.Toast;
 import com.example.sanghyunj.speckerapp.MainActivity;
 import com.example.sanghyunj.speckerapp.R;
 
+import com.example.sanghyunj.speckerapp.retrofit.Api;
+import com.example.sanghyunj.speckerapp.retrofit.DefaultResponse;
+import com.example.sanghyunj.speckerapp.retrofit.SignUpUser;
 import com.example.sanghyunj.speckerapp.util.GlobalVariable;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -36,7 +40,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.auth.GoogleAuthProvider;
+
+import java.io.IOException;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Created by sanghyunj on 03/06/2017.
@@ -53,7 +63,8 @@ public class EntranceActivity extends AppCompatActivity {
     LoginButton facebookBtn;
     SignInButton googleBtn;
 
-    FirebaseAuth firebaseAuth;
+    FirebaseAuth mFirebaseAuth;
+    FirebaseUser mFirebaseUser;
 
     static final String TAG = EntranceActivity.class.getName();
 
@@ -64,7 +75,7 @@ public class EntranceActivity extends AppCompatActivity {
 
         startActivity(new Intent(this, LaunchActivity.class));
 
-        firebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseAuth = FirebaseAuth.getInstance();
         Toast.makeText(getApplicationContext(), "zz", Toast.LENGTH_LONG).show();
         facebookBtn = (LoginButton) findViewById(R.id.facebook_login_button);
         googleBtn = (SignInButton) findViewById(R.id.google_login_button);
@@ -173,9 +184,9 @@ public class EntranceActivity extends AppCompatActivity {
     }
 
     public void facebookSetUp(){
+
         facebookBtn.setReadPermissions("email", "public_profile");
         callbackManager = CallbackManager.Factory.create();
-
 
         facebookBtn.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
@@ -200,14 +211,14 @@ public class EntranceActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        firebaseAuth.addAuthStateListener(mFirebaseAuthListener);
+        mFirebaseAuth.addAuthStateListener(mFirebaseAuthListener);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         if ( mFirebaseAuthListener != null )
-            firebaseAuth.removeAuthStateListener(mFirebaseAuthListener);
+            mFirebaseAuth.removeAuthStateListener(mFirebaseAuthListener);
     }
 
 
@@ -231,7 +242,7 @@ public class EntranceActivity extends AppCompatActivity {
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        firebaseAuth.signInWithCredential(credential)
+        mFirebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -244,8 +255,28 @@ public class EntranceActivity extends AppCompatActivity {
                             Toast.makeText(EntranceActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-                            startActivity(new Intent(EntranceActivity.this, MainActivity.class));
-                            finish();
+                            mFirebaseUser = mFirebaseAuth.getCurrentUser();
+                            mFirebaseUser.getToken(true)
+                                    .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<GetTokenResult> task) {
+                                            if (!task.isSuccessful()) { }
+                                            String token = task.getResult().getToken();
+                                            SignUpUser signUpUser = SignUpUser.getBuilder();
+                                            signUpUser.setEmail(mFirebaseUser.getEmail()).setName(mFirebaseUser.getDisplayName());
+                                            Api api = Api.retrofit.create(Api.class);
+                                            Call<DefaultResponse> call = api.signUp(token, signUpUser);
+                                            new SignUpTask().execute(call);
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
+                            // startActivity(new Intent(EntranceActivity.this, MainActivity.class));
+                            // finish();
                         }
                     }
                 });
@@ -255,7 +286,7 @@ public class EntranceActivity extends AppCompatActivity {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
 
         final AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        firebaseAuth.signInWithCredential(credential)
+        mFirebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -267,13 +298,62 @@ public class EntranceActivity extends AppCompatActivity {
                             Toast.makeText(EntranceActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-
-                            startActivity(new Intent(EntranceActivity.this, MainActivity.class));
-                            finish();
+                            mFirebaseUser = mFirebaseAuth.getCurrentUser();
+                            mFirebaseUser.getToken(true)
+                                    .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<GetTokenResult> task) {
+                                            if (!task.isSuccessful()) { }
+                                            String token = task.getResult().getToken();
+                                            SignUpUser signUpUser = SignUpUser.getBuilder();
+                                            signUpUser.setEmail(mFirebaseUser.getEmail()).setName(mFirebaseUser.getDisplayName());
+                                            Api api = Api.retrofit.create(Api.class);
+                                            Call<DefaultResponse> call = api.signUp(token, signUpUser);
+                                            new SignUpTask().execute(call);
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
+                            // startActivity(new Intent(EntranceActivity.this, MainActivity.class));
+                            // finish();
                         }
                     }
                 });
     }
 
+    private class SignUpTask extends AsyncTask<Call, Void, String> {
 
+        @Override
+        protected String doInBackground(Call... params) {
+            Call<DefaultResponse> call = params[0];
+            Response<DefaultResponse> response;
+            try {
+                response = call.execute();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+                return e.toString();
+            }
+            if (!response.isSuccessful()) return response.code() + " response failed";
+            return response.body().result;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d("SignUpTask", "result: " + result);
+            if (result.equals("ok")) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        startActivity(new Intent(EntranceActivity.this, MainActivity.class));
+                    }
+                });
+            }
+            finish();
+        }
+    }
 }

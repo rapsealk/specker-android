@@ -55,6 +55,14 @@ public class FriendDbHelper extends SQLiteOpenHelper {
         return newRowId;
     }
 
+    public int removeFriend(String userId, String friendUid) {
+        SQLiteDatabase db = getWritableDatabase();
+        String selection = COLUMN_NAME_USER_ID + " = ? AND " + COLUMN_NAME_FRIEND_ID + " = ?";
+        String[] selectionArgs = { userId, friendUid };
+        int result = db.delete(TABLE_NAME, selection, selectionArgs);
+        return result;
+    }
+
     // TODO updateFriend, deleteFriend
 
     public ArrayList<Friend> getFriends() {

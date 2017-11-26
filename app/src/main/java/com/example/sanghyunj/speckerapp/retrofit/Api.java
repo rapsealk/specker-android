@@ -3,6 +3,7 @@ package com.example.sanghyunj.speckerapp.retrofit;
 import com.example.sanghyunj.speckerapp.retrofit.Body.AddFriendBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.CreateChatroomBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.GetFriendListBody;
+import com.example.sanghyunj.speckerapp.retrofit.Body.RemoveFriendBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.SearchUserBody;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetFriendsListResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.ResponseWithObjectId;
@@ -21,6 +22,12 @@ import retrofit2.http.POST;
 
 public interface Api {
 
+    @POST("signUp")
+    Call<DefaultResponse> signUp(
+            @Header("Authorization") String authorization,
+            @Body SignUpUser body
+    );
+
     @POST("searchUser")
     Call<SearchUserResponse> searchUser(
         @Header("Authorization") String authorization,
@@ -31,6 +38,12 @@ public interface Api {
     Call<DefaultResponse> addFriend(
         @Header("Authorization") String authorization,
         @Body AddFriendBody body
+    );
+
+    @POST("removeFriend")
+    Call<DefaultResponse> removeFriend(
+        @Header("Authorization") String authorization,
+        @Body RemoveFriendBody body
     );
 
     @POST("getFriendsList")
