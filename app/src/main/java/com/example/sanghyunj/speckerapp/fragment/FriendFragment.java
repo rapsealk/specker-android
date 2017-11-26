@@ -2,37 +2,30 @@ package com.example.sanghyunj.speckerapp.fragment;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
 import com.example.sanghyunj.speckerapp.R;
-import com.example.sanghyunj.speckerapp.activity.UserActivity;
-import com.example.sanghyunj.speckerapp.activity.UserInfoActivity;
 import com.example.sanghyunj.speckerapp.adapter.FriendListAdapter;
 import com.example.sanghyunj.speckerapp.controller.Firebase;
 import com.example.sanghyunj.speckerapp.controller.FriendListObserver;
 import com.example.sanghyunj.speckerapp.database.FriendDbHelper;
 import com.example.sanghyunj.speckerapp.listener.OnFriendListItemClickListener;
-import com.example.sanghyunj.speckerapp.listener.OnFriendListItemLongClickListener;
 import com.example.sanghyunj.speckerapp.model.FriendList.FriendListItem;
 import com.example.sanghyunj.speckerapp.retrofit.Api;
 import com.example.sanghyunj.speckerapp.retrofit.Body.GetFriendListBody;
-import com.example.sanghyunj.speckerapp.retrofit.Body.RemoveFriendBody;
 import com.example.sanghyunj.speckerapp.retrofit.DefaultResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.Friend;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetFriendsListResponse;
 import com.example.sanghyunj.speckerapp.util.OrderingByKoreanEnglishNumberSpecial;
 import com.example.sanghyunj.speckerapp.view.CoordinateStickyListView;
+import com.example.sanghyunj.speckerapp.widget.FriendBottomSheetDialog;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -88,12 +81,12 @@ public class FriendFragment extends Fragment implements FriendListObserver{
             @Override
             public void onClick(int position) {
                 FriendListItem friend = (FriendListItem) friendListAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), UserActivity.class);
-                // Intent intent = new Intent(getActivity(), UserInfoActivity.class);
-                intent.putExtra("userName", friend.getName());
-                intent.putExtra("profileImage", friend.getProfileImage());
-                intent.putExtra("userId", friend.getUid());
-                startActivity(intent);
+                FriendBottomSheetDialog bottomSheetDialog = FriendBottomSheetDialog.getInstance(getContext());
+                bottomSheetDialog.setCanceledOnTouchOutside(true);
+                bottomSheetDialog.setUserProfile(friend.getProfileImage())
+                        .setUserName(friend.getName())
+                        .setUserId(friend.getUid())
+                        .show();
             }
         });
 

@@ -105,7 +105,6 @@
             </intent-filter>
         </receiver
         -->
-        <activity android:name=".activity.UserActivity"></activity>
     </application>
 
 </manifest>
