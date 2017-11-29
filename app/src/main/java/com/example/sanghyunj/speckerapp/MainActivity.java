@@ -5,11 +5,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+// import android.support.design.widget.FloatingActionButton;
+// import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -28,6 +27,7 @@ import com.example.sanghyunj.speckerapp.action.Action;
 import com.example.sanghyunj.speckerapp.activity.AddFriendActivity;
 import com.example.sanghyunj.speckerapp.activity.EntranceActivity;
 import com.example.sanghyunj.speckerapp.activity.LaunchActivity;
+import com.example.sanghyunj.speckerapp.activity.MapActivity;
 import com.example.sanghyunj.speckerapp.activity.WriteFeedActivity;
 import com.example.sanghyunj.speckerapp.fragment.ChatFragment;
 import com.example.sanghyunj.speckerapp.fragment.FriendFragment;
@@ -39,6 +39,8 @@ import com.example.sanghyunj.speckerapp.model.User;
 
 import com.example.sanghyunj.speckerapp.retrofit.Body.ChatroomMetaBody;
 import com.example.sanghyunj.speckerapp.util.SharedPreferenceManager;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -185,13 +187,37 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         tabLayout.getTabAt(3).setIcon(R.drawable.tab_surf_gray_1x);
         tabLayout.getTabAt(4).setIcon(R.drawable.tab_mypage_gray_1x);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        // FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        /*
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 // startActivity(new Intent(MainActivity.this, WriteFeedActivity.class));
+            }
+        });
+        */
+
+        FloatingActionMenu fab = (FloatingActionMenu) findViewById(R.id.fab);
+        FloatingActionButton mButtonFeed = (FloatingActionButton) findViewById(R.id.menu_item_feed);
+        FloatingActionButton mButtonMap = (FloatingActionButton) findViewById(R.id.menu_item_map);
+
+        fab.setClosedOnTouchOutside(true);
+
+        mButtonFeed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, WriteFeedActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        mButtonMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, MapActivity.class);
+                startActivity(intent);
             }
         });
 

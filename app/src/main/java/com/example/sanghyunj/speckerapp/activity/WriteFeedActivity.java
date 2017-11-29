@@ -103,14 +103,14 @@ public class WriteFeedActivity extends AppCompatActivity {
                                 if (task.isSuccessful()) {
                                     String token = task.getResult().getToken();
                                     String markup = mPreview.getText().toString();
-                                    // FeedService feedService = FeedService.retrofit.create(FeedService.class);
-                                    // Html html = new Html(markup);
+                                    FeedService feedService = FeedService.retrofit.create(FeedService.class);
+                                    Html html = new Html(markup);
                                     // final Call<DefaultResponse> call = feedService.sendFeed(token, markup,)
-                                    // final Call<DefaultResponse> call = feedService.sendFeed(token, new SendFeedData(html));
+                                    final Call<DefaultResponse> call = feedService.sendFeed(token, new SendFeedData(html));
                                     // new DefaultAsyncTask<DefaultResponse>(getApplicationContext()).execute(call);
-                                    String[] data = markup.split(" ");
-                                    RetrofitFactory retrofitFactory = RetrofitFactory.instance.create(RetrofitFactory.class);
-                                    final Call<DefaultResponse> call = retrofitFactory.addMarker(token, new AddMarker(data[0], Double.parseDouble(data[1]), Double.parseDouble(data[2])));
+                                    // String[] data = markup.split(" ");
+                                    // RetrofitFactory retrofitFactory = RetrofitFactory.instance.create(RetrofitFactory.class);
+                                    // final Call<DefaultResponse> call = retrofitFactory.addMarker(token, new AddMarker(data[0], Double.parseDouble(data[1]), Double.parseDouble(data[2])));
                                     new DefaultAsyncTask<DefaultResponse>(getApplicationContext()).execute(call);
                                     finish();
                                 } else {

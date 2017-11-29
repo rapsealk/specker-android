@@ -61,6 +61,14 @@ public class ChatDbHelper extends SQLiteOpenHelper {
         return newRowId;
     }
 
+    public int removeChat(String room) {
+        SQLiteDatabase db = getWritableDatabase();
+        String selection = COLUMN_NAME_ROOM + " = ?";
+        String[] selectionArgs = { room };
+        int result = db.delete(TABLE_NAME, selection, selectionArgs);
+        return result;
+    }
+
     public long getLastChatTimestamp(String roomId) {
         SQLiteDatabase db = getReadableDatabase();
         String[] projection = {

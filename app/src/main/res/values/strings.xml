@@ -7,4 +7,5 @@
     <string name="fb_login_protocol_scheme">fb1691916411112429</string-->
     <string name="facebook_app_id">123776005001183</string>
     <string name="fb_login_protocol_scheme">fb123776005001183</string>
+    <string name="title_activity_map">Map</string>
 </resources>

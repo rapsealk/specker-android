@@ -259,7 +259,10 @@ public class ChatActivity extends Activity {
                     JSONObject data = (JSONObject) args[0];
                     try {
                         String author = (String) data.get("author");
-                        if (author.equals(mSender)) return;
+                        if (author.equals(mSender)) {
+                            Log.d("CHAT_MESSAGE", "message: " + data.get("message"));
+                            return;
+                        }
                         String message = (String) data.get("message");
                         long timestamp = (long) data.get("timestamp");
                         String profileUrl = (String) data.get("profile");

@@ -22,9 +22,13 @@ import android.widget.Toast;
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.activity.ChatActivity;
 import com.example.sanghyunj.speckerapp.adapter.ChatListAdapter;
+import com.example.sanghyunj.speckerapp.database.ChatDbHelper;
+import com.example.sanghyunj.speckerapp.retrofit.Api;
 import com.example.sanghyunj.speckerapp.retrofit.Body.ChatroomMetaBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.ChatroomMetaResponse;
+import com.example.sanghyunj.speckerapp.retrofit.Body.RemoveChatroomBody;
 import com.example.sanghyunj.speckerapp.retrofit.ChatRequest;
+import com.example.sanghyunj.speckerapp.retrofit.DefaultResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -34,6 +38,10 @@ import com.google.firebase.auth.GetTokenResult;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -43,6 +51,8 @@ import retrofit2.Response;
 public class ChatFragment extends Fragment {
 
     private FirebaseAuth mFirebaseAuth;
+
+    private ChatDbHelper mDbHelper;
 
     // FIXME : http://hyesunzzang.tistory.com/28
     // private RecyclerView recyclerView;
@@ -59,6 +69,8 @@ public class ChatFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_chat, container, false);
+
+        mDbHelper = new ChatDbHelper(getContext());
 
         // TextView textView = (TextView) rootView.findViewById(R.id.section_label);
         listView = (ListView) rootView.findViewById(R.id.chatListView);
@@ -88,23 +100,45 @@ public class ChatFragment extends Fragment {
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO("Alert Dialog")
                 ChatroomMetaBody room = (ChatroomMetaBody) parent.getItemAtPosition(position);
                 CharSequence[] items = { "삭제", "취소" };
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle(room._id)
-                        .setItems(items, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which) {
-                                    case 0: {
-                                        Toast.makeText(getContext(), room._id + " 삭제", Toast.LENGTH_SHORT).show();
-                                    }
-                                    case 1: {
-                                        Toast.makeText(getContext(), room._id + " 취소", Toast.LENGTH_SHORT).show();
-                                    }
+                        .setItems(items, (DialogInterface dialog, int which) -> {
+                            switch (which) {
+                                case 0: {
+                                    Toast.makeText(getContext(), room._id + " 삭제", Toast.LENGTH_SHORT).show();
+                                    mFirebaseAuth.getCurrentUser().getToken(true)
+                                            .addOnCompleteListener((@NonNull Task<GetTokenResult> task) -> {
+                                                if (!task.isSuccessful()) return;
+                                                String token = task.getResult().getToken();
+                                                Api api = Api.retrofit.create(Api.class);
+                                                api.removeChatroomRx(token, new RemoveChatroomBody(room._id))
+                                                        .observeOn(AndroidSchedulers.mainThread())
+                                                        .subscribeOn(Schedulers.io())
+                                                        .subscribe((DefaultResponse defaultResponse) -> {
+                                                            if (!defaultResponse.result.equals("ok")) return;
+                                                            for (int index = 0; index < mChatRooms.size(); index++) {
+                                                                if (adapter.getItem(index)._id.equals(room._id)) {
+                                                                    mChatRooms.remove(index);
+                                                                    adapter.notifyDataSetChanged();
+                                                                    break;
+                                                                }
+                                                            }
+                                                            int _result = mDbHelper.removeChat(room._id);
+                                                            Log.d("Remove Chat", "result: " + _result + ", room: " + room._id);
+                                                        });
+                                            })
+                                            .addOnFailureListener((@NonNull Exception e) -> {
+                                                e.printStackTrace();
+                                            });
+                                    break;
                                 }
-                                dialog.dismiss();
+                                case 1: {
+                                    Toast.makeText(getContext(), room._id + " 취소", Toast.LENGTH_SHORT).show();
+                                }
                             }
+                            dialog.dismiss();
                         });
                 builder.show();
                 return true;
@@ -142,14 +176,15 @@ public class ChatFragment extends Fragment {
                                 new ChatRetriever().execute(call);
 
                             } else {
-                                Toast.makeText(getActivity(), "Failed to load chatrooms.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), "채팅방을 불러오는 데 실패했습니다.", Toast.LENGTH_SHORT).show();
                             }
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-
+                            e.printStackTrace();
+                            Toast.makeText(getContext(), "인증에 실패했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
                         }
                     });
         }
@@ -229,22 +264,6 @@ public class ChatFragment extends Fragment {
             adapter.notifyDataSetChanged();
         }
     }
-    /*
-    public class ChatBroadcastReceiver extends BroadcastReceiver {
-
-        public ChatBroadcastReceiver() {
-            super();
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d("BroadcastReceiver", "onReceive with action RECEIVE_CHAT");
-            Log.d("message", intent.getStringExtra("message"));
-            array.get(0).lastChat = intent.getStringExtra("message");
-            adapter.notifyDataSetChanged();
-        }
-    }
-    */
 }
 
 
