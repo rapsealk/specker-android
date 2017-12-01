@@ -1,23 +1,24 @@
 package com.example.sanghyunj.speckerapp.activity;
 
+import android.app.ProgressDialog;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.sanghyunj.speckerapp.R;
 import com.example.sanghyunj.speckerapp.adapter.TeamListAdapter;
 import com.example.sanghyunj.speckerapp.retrofit.Api;
+import com.example.sanghyunj.speckerapp.retrofit.Body.SearchTeamBody;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetMarkerResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.MarkerPosition;
 import com.example.sanghyunj.speckerapp.retrofit.Response.SPKMarker;
+import com.example.sanghyunj.speckerapp.retrofit.Response.SearchTeamResponse;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -27,8 +28,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 
 import java.util.ArrayList;
@@ -40,16 +44,20 @@ import io.reactivex.schedulers.Schedulers;
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleMap.OnCameraIdleListener, GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener {
 
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+
+    private Api mApi;
+
+    private EditText mEditTextSearch;
+    private Button mImageButtonSearch;
     private GoogleMap mGoogleMap;
     private ListView mTeamListView;
-    // private RecyclerView mTeamRecyclerView;
     private TeamListAdapter mAdapter;
-    private LinearLayoutManager mLinearLayoutManager;
-    private Api mApi;
     private ArrayList<SPKMarker> mArrayListMarkers = new ArrayList<>();
-    // private HashMap<String, Marker> mHashMarkers;
-    private HashMap<Marker, Integer> mReverseHash;
-    private ProgressBar mProgressBar;
+    private HashMap<String, Marker> mReverseHash;
+    private Marker mLastClickedMarker = null;
+    private ProgressDialog mProgressDialog;
     private boolean mIdleOn = true;
     private boolean mAnimateCameraByItemTouch = false;
 
@@ -57,63 +65,64 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser == null) {
+            finish();
+        }
+
+        mApi = Api.retrofit.create(Api.class);
+
+        mEditTextSearch = (EditText) findViewById(R.id.et_search);
+        mImageButtonSearch = (Button) findViewById(R.id.button_search);
+        /*
+        mImageButtonSearch.setOnClickListener((View view) -> {
+            mFirebaseUser.getToken(true)
+                    .addOnCompleteListener((@NonNull Task<GetTokenResult> task) -> {
+                        if (!task.isSuccessful()) {
+                            return;
+                        }
+                        String token = task.getResult().getToken();
+                        String keyword = mEditTextSearch.getText().toString();
+                        mApi.searchTeam(token, new SearchTeamBody(keyword))
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribeOn(Schedulers.io())
+                                .subscribe((SearchTeamResponse response) -> {
+                                    response.getTeams();
+                                });
+                    })
+                    .addOnFailureListener((@NonNull Exception e) -> {
+
+                    });
+        });
+        */
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         mTeamListView = (ListView) findViewById(R.id.teamlist);
 
-        // mTeamRecyclerView = (RecyclerView) findViewById(R.id.teamlist);
-        /* mTeamRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-            @Override
-            public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-                super.onDraw(c, parent, state);
-            }
-        }); */
         mAdapter = new TeamListAdapter(getApplicationContext(), mArrayListMarkers);
         mTeamListView.setAdapter(mAdapter);
-        // mTeamRecyclerView.setAdapter(mAdapter);
-        // mLinearLayoutManager = new LinearLayoutManager(getApplicationContext());
-        // mTeamRecyclerView.setLayoutManager(mLinearLayoutManager);
 
-        mTeamListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                SPKMarker item = mArrayListMarkers.get(position);
-                LatLng latlng = new LatLng(item.getPosition().getLatitude(), item.getPosition().getLongitude());
-                mAnimateCameraByItemTouch = true;
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
-            }
+        mTeamListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
+            SPKMarker item = mArrayListMarkers.get(position);
+            LatLng latlng = new LatLng(item.getPosition().getLatitude(), item.getPosition().getLongitude());
+            Marker marker = mReverseHash.get(Double.toHexString(latlng.latitude) + Double.toHexString(latlng.longitude));
+            if (mLastClickedMarker != null) mLastClickedMarker.hideInfoWindow();
+            mLastClickedMarker = marker;
+            mAnimateCameraByItemTouch = true;
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
+            marker.showInfoWindow();
         });
-
-        /*
-        mTeamRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                return false;
-            }
-
-            @Override
-            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-                View view = rv.findChildViewUnder(e.getX(), e.getY());
-                if (view == null) return;
-                int position = rv.getChildAdapterPosition(view);
-                SPKMarker item = mArrayListMarkers.get(position);
-                LatLng latlng = new LatLng(item.getPosition().getLatitude(), item.getPosition().getLongitude());
-                mAnimateCameraByItemTouch = true;
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLng(latlng));
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-            }
-        });
-        */
 
         mApi = Api.retrofit.create(Api.class);
-        mProgressBar = new ProgressBar(this);
-        mProgressBar.setIndeterminate(true);
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setCanceledOnTouchOutside(false);
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
     }
 
     /**
@@ -131,13 +140,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         mGoogleMap.setOnCameraIdleListener(this);
         mGoogleMap.setOnMapClickListener(this);
+        mGoogleMap.setOnMarkerClickListener(this);
 
         // Add a marker in Sydney and move the camera
         LatLng seoul = new LatLng(37.566535, 126.97796919999996);
-        // mGoogleMap.addMarker(new MarkerOptions().position(sydney).title("SPKMarker in Sydney"));
-        // mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(seoul));
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(seoul, 20f));
-
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(seoul, 15f));
     }
 
     // gms coordinate bound (keyword searchteam)
@@ -149,12 +156,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             return;
         }
         if (!mIdleOn) return;
-        mProgressBar.setVisibility(ProgressBar.VISIBLE);
+        mProgressDialog.setTitle("팀 마커를 불러오는 중...");
+        mProgressDialog.show();
+        mLastClickedMarker = null;
         mArrayListMarkers = new ArrayList<>();
         mAdapter.setItems(mArrayListMarkers);
-        // mAdapter.setItems(new ArrayList<>());
         mReverseHash = new HashMap<>();
-        // mHashMarkers = new HashMap<>();
         LatLngBounds bounds = mGoogleMap.getProjection().getVisibleRegion().latLngBounds;
         FirebaseAuth.getInstance().getCurrentUser().getToken(true)
                 .addOnCompleteListener((@NonNull Task<GetTokenResult> task) -> {
@@ -169,7 +176,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             .subscribeOn(Schedulers.io())
                             .subscribe((GetMarkerResponse response) -> {
                                 if (!response.getResult().equals("ok")) {
-                                    mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                                    mProgressDialog.dismiss();
                                     return;
                                 }
                                 ArrayList<SPKMarker> markers = response.getMarkers();
@@ -183,20 +190,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                                     Marker marker = mGoogleMap.addMarker(markerOptions);
                                     mArrayListMarkers.add(spkmarker);
-                                    // mAdapter.addItem(spkmarker);
-                                    mReverseHash.put(marker, i);
-                                    // mHashMarkers.put(Long.toString(spkmarker.getTimestamp()), marker);
+                                    String key = Double.toHexString(marker.getPosition().latitude) + Double.toHexString(marker.getPosition().longitude);
+                                    mReverseHash.put(key, marker);
                                 }
                                 mAdapter.setItems(mArrayListMarkers);
                                 mAdapter.notifyDataSetChanged();
-                                // mTeamRecyclerView.getAdapter().notifyDataSetChanged();
-                                // Log.d("Markers", "adapter size: " + mTeamRecyclerView.getAdapter().getItemCount());
-                                mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                                mProgressDialog.dismiss();
                             });
                 })
                 .addOnFailureListener((@NonNull Exception e) -> {
                     e.printStackTrace();
-                    mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                    mProgressDialog.dismiss();
                 });
     }
 
@@ -204,14 +208,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onMapClick(LatLng latlng) {
         mIdleOn ^= true;
         mTeamListView.setVisibility(mIdleOn ? ListView.VISIBLE : ListView.GONE);
-        // mTeamRecyclerView.setVisibility(mIdleOn ? RecyclerView.VISIBLE : RecyclerView.GONE);
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        // int position = mReverseHash.get(marker);
-        // mArrayListMarkers.get(position)
-        // return true;
+        mAnimateCameraByItemTouch = true;
         return false;
     }
 

@@ -5,10 +5,12 @@ import com.example.sanghyunj.speckerapp.retrofit.Body.CreateChatroomBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.GetFriendListBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.RemoveChatroomBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.RemoveFriendBody;
+import com.example.sanghyunj.speckerapp.retrofit.Body.SearchTeamBody;
 import com.example.sanghyunj.speckerapp.retrofit.Body.SearchUserBody;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetFriendsListResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.GetMarkerResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.ResponseWithObjectId;
+import com.example.sanghyunj.speckerapp.retrofit.Response.SearchTeamResponse;
 import com.example.sanghyunj.speckerapp.retrofit.Response.SearchUserResponse;
 
 import io.reactivex.Observable;
@@ -83,6 +85,12 @@ public interface Api {
         @Query("longitudeA") double longitudeA,
         @Query("latitudeB") double latitudeB,
         @Query("longitudeB") double longitudeB
+    );
+
+    @POST("searchTeam")
+    Observable<SearchTeamResponse> searchTeam(
+        @Header("Authorization") String authorization,
+        @Body SearchTeamBody body
     );
 
     public static final Retrofit retrofit = new Retrofit.Builder()
