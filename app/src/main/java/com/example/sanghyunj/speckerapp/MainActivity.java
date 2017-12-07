@@ -380,7 +380,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 }
             }
             if (index == ChatFragment.mChatRooms.size()) {
-                ChatFragment.mChatRooms.add(0, new ChatroomMetaBody(room, 2, message, timestamp));
+                ArrayList<String> participants = new ArrayList<>();
+                participants.add(room);
+                ChatFragment.mChatRooms.add(0, new ChatroomMetaBody(room, participants, message, timestamp));
             }
             if (!mSharedPreferenceManager.getRoomStatus(room)) {
                 mSharedPreferenceManager.setUnreadChatCount(room, mSharedPreferenceManager.getUnreadChatCount(room) + 1);

@@ -67,7 +67,9 @@ public class ChatListAdapter extends BaseAdapter {
 
         ChatroomMetaBody item = list.get(index);
         // viewHolder.thumbnailImage
-        viewHolder.userName.setText(item._id + ((item.participants > 2) ? "(" + item.participants + ")" : ""));
+        int participants = item.participants.size();
+        viewHolder.userName.setText(item.participants.get(0).substring(0, 10) + (participants > 2 ? "..." : "") + " (" + participants + ")");
+        // viewHolder.userName.setText(item._id + ((item.participants > 2) ? "(" + item.participants + ")" : ""));
         viewHolder.lastChat.setText(item.lastChat);
         if (item.lastTimestamp > 0) viewHolder.lastTimestamp.setText(todayFormat.format(item.lastTimestamp));
         int unreadCount = mSharedPreferenceManager.getUnreadChatCount(item._id);

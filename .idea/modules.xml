@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/specker-android.iml" filepath="$PROJECT_DIR$/specker-android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/specker-android-github.iml" filepath="$PROJECT_DIR$/specker-android-github.iml" />
+      <module fileurl="file://C:\Users\GL552\Desktop\specker-android\specker-android-github.iml" filepath="C:\Users\GL552\Desktop\specker-android\specker-android-github.iml" />
     </modules>
   </component>
 </project>

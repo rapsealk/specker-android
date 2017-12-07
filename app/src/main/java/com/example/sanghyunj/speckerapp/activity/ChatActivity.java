@@ -216,7 +216,9 @@ public class ChatActivity extends Activity {
             if (ChatFragment.mChatRooms.get(mChatroomCount)._id.equals(mRoomId)) break;
         }
         if (mChatroomCount == ChatFragment.mChatRooms.size()) {
-            ChatFragment.mChatRooms.add(new ChatroomMetaBody(mRoomId, 2, "", System.currentTimeMillis()));
+            ArrayList<String> participants = new ArrayList<>();
+            participants.add(mRoomId);
+            ChatFragment.mChatRooms.add(new ChatroomMetaBody(mRoomId, participants, "", System.currentTimeMillis()));
             ChatFragment.adapter.notifyDataSetChanged();
         }
 
